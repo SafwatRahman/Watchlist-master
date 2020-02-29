@@ -1,0 +1,23 @@
+extends layout
+
+
+block layout-content
+
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    link(rel="stylesheet", href="https://www.w3schools.com/w3css/4/w3.css")
+    link(rel="stylesheet", href="https://fonts.googleapis.com/css?family=Raleway")
+    body.bgimg 
+        div(class="bgimg w3-display-container w3-animate-opacity") 
+        div(class="w3-display-middle")
+            h1(class="w3-jumbo w3-animate-top btn draw-border") 
+            hr(class="w3-border-grey",style="margin:auto;width:40%")
+            p(class="w3-large w3-center") 
+        div(class="w3-display-bottomleft w3-padding-large")
+        div
+            div(class="form" style="margin: auto; width: 50%;  padding: 10px;")
+                form(class="register-form" action="/register" method="POST")
+                    input(id="name" type="name" name="name" placeholder="name")
+                    input(id="password" type="password" name="password" placeholder="password")
+                    input(id="email" type="email" name="email" placeholder="email")
+                    button(type="submit") create
+                    p(class="message") Already registered? #[a(href="/") Sign in] 

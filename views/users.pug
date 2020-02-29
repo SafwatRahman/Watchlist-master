@@ -1,0 +1,242 @@
+extends layout
+
+
+block layout-content
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css")
+    script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js")
+    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js")
+    link(rel="stylesheet", href="https://www.w3schools.com/w3css/4/w3.css")
+    link(rel="stylesheet", href="https://fonts.googleapis.com/css?family=Raleway")
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    link(rel="stylesheet", href="https://www.w3schools.com/w3css/4/w3.css")
+    link(rel="stylesheet", href="https://fonts.googleapis.com/css?family=Raleway") 
+    body.bgimg 
+        div(class="container-fluid")    
+            div(class="row")
+                form(class="w3-display-topright" action="/logout?_method=DELETE" method="POST")  
+                        button(class="exitButton" type="submit") Exit
+            div(class="row")
+                    div(class="col-sm-2") 
+                    div(class="col-sm-8")
+                        form(class="login-form" autocomplete="off" action="/add-to-list?valid=#{id}" method="post")
+                            div(class="autocomplete")
+                                input(id="myInput" type="text" name="addToList" placeholder="Select a movie or tv show")
+                                input(type="submit" value="Add to Currently Watching" style="background: rgb(65, 182, 222)")  
+                        script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js")
+                        script.
+                            function getSearchResults(search) {
+                                var titlesForFunc = [];
+                                return new Promise(function(resolve, reject) {
+                                    $.getJSON("https://www.omdbapi.com/?", {
+                                    apikey: "12687fb7",
+                                    s: search
+                                    }, function (data) {
+                                    $.each(data.Search, function (index, value) {
+                                        if (index < 20) {
+                                        titlesForFunc.push(value);
+                                        }
+                                    });
+                                    resolve(titlesForFunc);
+                                    },
+                                function() { // need this to handle possible errors and complete the Promise
+                                    reject([]);
+                                });
+                                });
+                            }  
+                            function getPoster(search) {
+                                var titlesForFunc = [];
+                                return new Promise(function(resolve, reject) {
+                                    $.getJSON("https://www.omdbapi.com/?", {
+                                    apikey: "12687fb7",
+                                    i: search
+                                    }, function (data) { 
+                                    resolve(data.Poster);
+                                    },
+                                function() { // need this to handle possible errors and complete the Promise
+                                    reject([]);
+                                });
+                                });
+                            }  
+                            function autocomplete(inp) {
+                            /*the autocomplete function takes two arguments,
+                            the text field element and an array of possible autocompleted values:*/
+                            var currentFocus;
+                            /*execute a function when someone writes in the text field:*/
+                            inp.addEventListener("input", function(e) {
+                                var a, b, i, val = this.value;
+                                /*close any already open lists of autocompleted values*/
+                                closeAllLists();
+                                if (!val) { return false;}
+                                currentFocus = -1;
+                                /*create a DIV element that will contain the items (values):*/
+                                a = document.createElement("DIV");
+                                a.setAttribute("id", this.id + "autocomplete-list");
+                                a.setAttribute("class", "autocomplete-items");
+                                /*append the DIV element as a child of the autocomplete container:*/
+                                this.parentNode.appendChild(a); 
+                                
+                                getSearchResults(val).then(arr => {
+                                    /*for each item in the array...*/
+                                    for (i = 0; i < arr.length; i++) {
+                                        // Create the list item:
+                                        var img = document.createElement('img');
+                                        img.setAttribute('src',arr[i].Poster);
+                                        img.setAttribute('class','w3-bar-item w3-rectangle w3-hide-small')
+                                        img.setAttribute('style', 'width:85px') 
+                                        var item = document.createElement('li');
+                                        item.appendChild(img);
+                                        item.setAttribute("class","w3-bar") 
+                                        var div = document.createElement('div');
+                                        div.setAttribute("class","w3-bar-item");
+                                        var span1 = document.createElement('span');
+                                        span1.setAttribute("class","w3-large");
+                                        span1.innerHTML = "    "+arr[i].Title+"\n"; 
+                                        var span2 = document.createElement('span');
+                                        span2.setAttribute("class","w3-small"); 
+                                        /*check if the item starts with the same letters as the text field value:*/
+                                        /*create a DIV element for each matching element:*/
+                                        b = document.createElement("DIV"); 
+                                        /*insert a input field that will hold the current array item's value:*/
+                                        b.innerHTML += "<input type='hidden' value='" + arr[i].Title + "'>";
+                                        b.appendChild(img);
+                                        b.appendChild(span1); 
+                                        /*execute a function when someone clicks on the item value (DIV element):*/
+                                        b.addEventListener("click", function (e) {
+                                        /*insert the value for the autocomplete text field:*/
+                                        inp.value = this.getElementsByTagName("input")[0].value;
+                                        /*close the list of autocompleted values,
+                                        (or any other open lists of autocompleted values:*/
+                                        closeAllLists();
+                                        });
+                                        a.appendChild(b);
+                                    }
+                                    });
+                            });
+                            /*execute a function presses a key on the keyboard:*/
+                            inp.addEventListener("keydown", function(e) {
+                                var x = document.getElementById(this.id + "autocomplete-list");
+                                if (x) x = x.getElementsByTagName("div");
+                                if (e.keyCode == 40) {
+                                    /*If the arrow DOWN key is pressed,
+                                    increase the currentFocus variable:*/
+                                    currentFocus++;
+                                    /*and and make the current item more visible:*/
+                                    addActive(x);
+                                } else if (e.keyCode == 38) { //up
+                                    /*If the arrow UP key is pressed,
+                                    decrease the currentFocus variable:*/
+                                    currentFocus--;
+                                    /*and and make the current item more visible:*/
+                                    addActive(x);
+                                } else if (e.keyCode == 13) {
+                                    /*If the ENTER key is pressed, prevent the form from being submitted,*/
+                                    e.preventDefault();
+                                    if (currentFocus > -1) {
+                                    /*and simulate a click on the "active" item:*/
+                                    if (x) x[currentFocus].click();
+                                    }
+                                }
+                            });
+                            function addActive(x) {
+                                /*a function to classify an item as "active":*/
+                                if (!x) return false;
+                                /*start by removing the "active" class on all items:*/
+                                removeActive(x);
+                                if (currentFocus >= x.length) currentFocus = 0;
+                                if (currentFocus < 0) currentFocus = (x.length - 1);
+                                /*add class "autocomplete-active":*/
+                                x[currentFocus].classList.add("autocomplete-active");
+                            }
+                            function removeActive(x) {
+                                /*a function to remove the "active" class from all autocomplete items:*/
+                                for (var i = 0; i < x.length; i++) {
+                                x[i].classList.remove("autocomplete-active");
+                                }
+                            }
+                            function closeAllLists(elmnt) {
+                                /*close all autocomplete lists in the document,
+                                except the one passed as an argument:*/
+                                    var x = document.getElementsByClassName("autocomplete-items");
+                                for (var i = 0; i < x.length; i++) {
+                                if (elmnt != x[i] && elmnt != inp) {
+                                    x[i].parentNode.removeChild(x[i]);
+                                }
+                                }
+                            }
+                            /*execute a function when someone clicks in the document:*/
+                            document.addEventListener("click", function (e) {
+                                closeAllLists(e.target);
+                            });
+                            }
+                                
+                            autocomplete(document.getElementById("myInput"));
+
+                        nav 
+                            ul(class="w3-ul w3-card-4")
+                                for row,index in data
+                                    if (row.id==id)
+                                        li(class="w3-bar")
+                                            div(class="w3-bar-item" style="background-color:white;") 
+                                            
+                                                span(class="w3-large") #{row.Name}#[br]  
+                                                div( class='carousel' id="div"+index) 
+                                                    for imdbid in row.imdbid.split(",")
+                                                        script(type="text/javascript").
+                                                            getPoster("!{imdbid}").then(poster => {  
+                                                                if (poster==undefined) { 
+                                                                } else { 
+                                                                    var container = document.createElement('div');
+                                                                    var span = document.createElement('span');
+                                                                    var form = document.createElement('form');
+                                                                    form.id = "form-id";
+                                                                    form.method = "post";
+                                                                    form.action = "/remove-from-list?valid=!{imdbid}"
+                                                                    span.setAttribute('class', 'w3-transparent close w3-button w3-small'); 
+                                                                    span.innerHTML = "&times;"; 
+                                                                    span.onclick = function () {location.href = "/remove-from-list?valid=!{imdbid}";};
+                                                                    container.setAttribute('class','slide img-wrap');
+                                                                    var img = document.createElement('img');
+                                                                    img.setAttribute('class','w3-bar-item w3-rectangle w3-hide-small')
+                                                                    img.setAttribute('style', 'width:150px')
+                                                                    img.setAttribute('style', 'height:250px')
+                                                                    img.setAttribute('src', poster)
+                                                                    container.appendChild(span);
+                                                                    container.appendChild(img);
+                                                                    document.getElementById('div'+'!{index}').appendChild(container)
+                                                                } 
+                                                            })
+                                    else 
+                                        continue
+                                for row,index in data 
+                                    if (row.id!=id) 
+                                        li(class="w3-bar")  
+                                            div(class="w3-bar-item" style="background-color:white;")  
+                                                span(class="w3-large") #{row.Name}#[br]  
+                                                div( class='carousel' id="div"+index) 
+                                                    for imdbid in row.imdbid.split(",")
+                                                        script(type="text/javascript").
+                                                            getPoster("!{imdbid}").then(poster => {  
+                                                                if (poster==undefined) { 
+                                                                } else { 
+                                                                    var container = document.createElement('div');
+                                                                    var span = document.createElement('span');
+                                                                    container.setAttribute('class','slide img-wrap');
+                                                                    var img = document.createElement('img');
+                                                                    img.setAttribute('class','w3-bar-item w3-rectangle w3-hide-small')
+                                                                    img.setAttribute('style', 'width:150px')
+                                                                    img.setAttribute('style', 'height:250px')
+                                                                    img.setAttribute('src', poster)
+                                                                    container.appendChild(span);
+                                                                    container.appendChild(img);
+                                                                    document.getElementById('div'+'!{index}').appendChild(container)
+                                                                } 
+                                                            }) 
+                                                
+    
+                                                    
+                                                    
+
+                  
